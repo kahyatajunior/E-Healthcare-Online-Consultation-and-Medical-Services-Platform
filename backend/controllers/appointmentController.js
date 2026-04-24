@@ -150,6 +150,12 @@ exports.updateAppointmentStatus = async (req, res, next) => {
         .json({ success: false, message: "Not authorized" });
     }
 
+    if (appointment.status === status) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Appointment is already " + status });
+    }
+
     if (status === "confirmed" && !isDoctor && !isAdmin) {
       return res
         .status(403)

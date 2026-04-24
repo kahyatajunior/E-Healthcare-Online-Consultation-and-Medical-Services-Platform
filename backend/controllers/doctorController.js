@@ -48,7 +48,7 @@ exports.getAllDoctors = async (req, res, next) => {
     doctors = doctors.filter((doc) => doc.user !== null);
 
     if (search) {
-      const searchRegex = new RegExp(search, "i");
+      const searchRegex = new RegExp(search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), "i");
       doctors = doctors.filter(
         (doc) =>
           searchRegex.test(doc.user.name) ||
@@ -56,14 +56,14 @@ exports.getAllDoctors = async (req, res, next) => {
       );
     }
 
-    const total = await Doctor.countDocuments(filter);
+    const total = doctors.length;
 
     res.status(200).json({
       success: true,
       count: doctors.length,
       total,
       page: Number(page),
-      pages: Math.ceil(total / Number(limit)),
+      pages: 1,
       doctors,
     });
   } catch (error) {

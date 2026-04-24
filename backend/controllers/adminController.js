@@ -57,9 +57,10 @@ exports.getAllUsers = async (req, res, next) => {
 
     if (role) filter.role = role;
     if (search) {
+      const sanitized = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       filter.$or = [
-        { name: { $regex: search, $options: "i" } },
-        { email: { $regex: search, $options: "i" } },
+        { name: { $regex: sanitized, $options: "i" } },
+        { email: { $regex: sanitized, $options: "i" } },
       ];
     }
 

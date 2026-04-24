@@ -12,8 +12,8 @@ const router = express.Router();
 
 router.get("/", getAllDoctors);
 router.get("/specializations", getSpecializations);
-router.get("/:id", getDoctorById);
 router.get("/user/:userId", getDoctorByUserId);
+router.get("/:id", getDoctorById);
 router.put("/availability", protect, authorize("doctor"), updateAvailability);
 
 module.exports = router;

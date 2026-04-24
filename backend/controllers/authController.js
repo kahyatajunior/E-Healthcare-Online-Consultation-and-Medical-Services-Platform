@@ -22,7 +22,7 @@ exports.register = async (req, res, next) => {
       name,
       email,
       password,
-      role: role || "patient",
+      role: role === "doctor" ? "doctor" : "patient",
       phone,
       isApproved: role === "doctor" ? false : true,
     });
