@@ -114,6 +114,24 @@ exports.getPrescriptionById = async (req, res, next) => {
 
 exports.getPrescriptionsByAppointment = async (req, res, next) => {
   try {
+    const appointment = await Appointment.findById(req.params.appointmentId);
+    if (!appointment) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Appointment not found" });
+    }
+
+    const isAuthorized =
+      appointment.patient.toString() === req.user._id.toString() ||
+      appointment.doctor.toString() === req.user._id.toString() ||
+      req.user.role === "admin";
+
+    if (!isAuthorized) {
+      return res
+        .status(403)
+        .json({ success: false, message: "Not authorized" });
+    }
+
     const prescriptions = await Prescription.find({
       appointment: req.params.appointmentId,
     })

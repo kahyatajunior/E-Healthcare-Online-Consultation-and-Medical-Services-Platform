@@ -17,7 +17,8 @@ exports.getAllDoctors = async (req, res, next) => {
     const filter = {};
 
     if (specialization) {
-      filter.specialization = { $regex: specialization, $options: "i" };
+      const sanitizedSpec = specialization.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      filter.specialization = { $regex: sanitizedSpec, $options: "i" };
     }
     if (minRating) {
       filter.rating = { $gte: Number(minRating) };

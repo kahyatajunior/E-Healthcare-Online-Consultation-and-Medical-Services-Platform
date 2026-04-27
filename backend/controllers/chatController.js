@@ -97,6 +97,16 @@ exports.markMessagesRead = async (req, res, next) => {
         .json({ success: false, message: "Chat not found" });
     }
 
+    const isParticipant = chat.participants.some(
+      (p) => p.toString() === req.user._id.toString()
+    );
+
+    if (!isParticipant) {
+      return res
+        .status(403)
+        .json({ success: false, message: "Not authorized" });
+    }
+
     chat.messages.forEach((msg) => {
       if (msg.sender.toString() !== req.user._id.toString()) {
         msg.isRead = true;

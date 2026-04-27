@@ -156,6 +156,21 @@ exports.updateAppointmentStatus = async (req, res, next) => {
         .json({ success: false, message: "Appointment is already " + status });
     }
 
+    const validTransitions = {
+      pending: ["confirmed", "cancelled"],
+      confirmed: ["completed", "cancelled"],
+      completed: [],
+      cancelled: [],
+    };
+
+    const allowed = validTransitions[appointment.status] || [];
+    if (!allowed.includes(status)) {
+      return res.status(400).json({
+        success: false,
+        message: `Cannot transition from ${appointment.status} to ${status}`,
+      });
+    }
+
     if (status === "confirmed" && !isDoctor && !isAdmin) {
       return res
         .status(403)
