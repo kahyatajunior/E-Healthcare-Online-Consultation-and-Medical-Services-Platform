@@ -54,6 +54,11 @@ exports.createAppointment = async (req, res, next) => {
 
     res.status(201).json({ success: true, appointment: populated });
   } catch (error) {
+    if (error.code === 11000) {
+      return res
+        .status(400)
+        .json({ success: false, message: "This time slot is already booked" });
+    }
     next(error);
   }
 };
@@ -111,8 +116,8 @@ exports.getAppointmentById = async (req, res, next) => {
     }
 
     const isParticipant =
-      appointment.patient._id.toString() === req.user._id.toString() ||
-      appointment.doctor._id.toString() === req.user._id.toString() ||
+      appointment.patient?._id?.toString() === req.user._id.toString() ||
+      appointment.doctor?._id?.toString() === req.user._id.toString() ||
       req.user.role === "admin";
 
     if (!isParticipant) {

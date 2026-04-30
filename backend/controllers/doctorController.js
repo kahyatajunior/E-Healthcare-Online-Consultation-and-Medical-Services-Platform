@@ -33,38 +33,38 @@ exports.getAllDoctors = async (req, res, next) => {
     if (sortBy === "experience") sort = { experience: -1 };
     if (sortBy === "rating") sort = { rating: -1 };
 
-    const skip = (Number(page) - 1) * Number(limit);
+    const approvedUserIds = await User.find(
+      { isApproved: true, isActive: true, role: "doctor" },
+      { _id: 1 }
+    );
+    filter.user = { $in: approvedUserIds.map((u) => u._id) };
 
-    let query = Doctor.find(filter)
+    let allDoctors = await Doctor.find(filter)
       .populate({
         path: "user",
         select: "name email avatar isApproved isActive",
-        match: { isApproved: true, isActive: true },
       })
-      .sort(sort)
-      .skip(skip)
-      .limit(Number(limit));
-
-    let doctors = await query;
-    doctors = doctors.filter((doc) => doc.user !== null);
+      .sort(sort);
 
     if (search) {
       const searchRegex = new RegExp(search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), "i");
-      doctors = doctors.filter(
+      allDoctors = allDoctors.filter(
         (doc) =>
           searchRegex.test(doc.user.name) ||
           searchRegex.test(doc.specialization)
       );
     }
 
-    const total = doctors.length;
+    const total = allDoctors.length;
+    const skip = (Number(page) - 1) * Number(limit);
+    const doctors = allDoctors.slice(skip, skip + Number(limit));
 
     res.status(200).json({
       success: true,
       count: doctors.length,
       total,
       page: Number(page),
-      pages: 1,
+      pages: Math.ceil(total / Number(limit)),
       doctors,
     });
   } catch (error) {

@@ -1,6 +1,9 @@
 const User = require("../models/User");
 const Doctor = require("../models/Doctor");
 const Appointment = require("../models/Appointment");
+const Chat = require("../models/Chat");
+const Prescription = require("../models/Prescription");
+const Review = require("../models/Review");
 
 exports.getDashboardStats = async (_req, res, next) => {
   try {
@@ -112,6 +115,12 @@ exports.approveDoctor = async (req, res, next) => {
 
 exports.toggleUserStatus = async (req, res, next) => {
   try {
+    if (req.params.id === req.user._id.toString()) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Cannot change your own status" });
+    }
+
     const user = await User.findById(req.params.id);
 
     if (!user) {
@@ -135,6 +144,12 @@ exports.toggleUserStatus = async (req, res, next) => {
 
 exports.deleteUser = async (req, res, next) => {
   try {
+    if (req.params.id === req.user._id.toString()) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Cannot delete your own account" });
+    }
+
     const user = await User.findById(req.params.id);
 
     if (!user) {
@@ -144,9 +159,21 @@ exports.deleteUser = async (req, res, next) => {
     }
 
     if (user.role === "doctor") {
-      await Doctor.findOneAndDelete({ user: user._id });
+      const doctorProfile = await Doctor.findOne({ user: user._id });
+      if (doctorProfile) {
+        await Review.deleteMany({ doctorProfile: doctorProfile._id });
+        await Doctor.findByIdAndDelete(doctorProfile._id);
+      }
     }
 
+    await Appointment.deleteMany({
+      $or: [{ patient: user._id }, { doctor: user._id }],
+    });
+    await Chat.deleteMany({ participants: user._id });
+    await Prescription.deleteMany({
+      $or: [{ patient: user._id }, { doctor: user._id }],
+    });
+    await Review.deleteMany({ patient: user._id });
     await User.findByIdAndDelete(req.params.id);
 
     res.status(200).json({ success: true, message: "User deleted" });

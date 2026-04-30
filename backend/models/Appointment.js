@@ -59,5 +59,9 @@ const appointmentSchema = new mongoose.Schema(
 appointmentSchema.index({ patient: 1, date: -1 });
 appointmentSchema.index({ doctor: 1, date: -1 });
 appointmentSchema.index({ status: 1 });
+appointmentSchema.index(
+  { doctor: 1, date: 1, "timeSlot.startTime": 1 },
+  { unique: true, partialFilterExpression: { status: { $in: ["pending", "confirmed"] } } }
+);
 
 module.exports = mongoose.model("Appointment", appointmentSchema);

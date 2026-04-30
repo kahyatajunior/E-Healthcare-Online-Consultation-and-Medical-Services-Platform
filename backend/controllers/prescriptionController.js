@@ -96,8 +96,8 @@ exports.getPrescriptionById = async (req, res, next) => {
     }
 
     const isAuthorized =
-      prescription.doctor._id.toString() === req.user._id.toString() ||
-      prescription.patient._id.toString() === req.user._id.toString() ||
+      prescription.doctor?._id?.toString() === req.user._id.toString() ||
+      prescription.patient?._id?.toString() === req.user._id.toString() ||
       req.user.role === "admin";
 
     if (!isAuthorized) {
